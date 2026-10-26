@@ -2,7 +2,6 @@
 #define PANS_SRC_LOGGER_LOG_RECORD_H
 
 #include <chrono>
-#include <cstdint>
 #include <string_view>
 
 #include <pans/logger/log_level.h>
@@ -20,7 +19,7 @@ struct LogRecordView {
     u64 m_fiberId = 0;      // 协程ID
     std::string_view m_threadName;  // 线程名
     std::string_view m_fileName;    // 文件名
-    std::uint32_t m_line = 0;       // 行号
+    u32 m_line = 0;                 // 行号
 };
 
 } // namespace pans::detail

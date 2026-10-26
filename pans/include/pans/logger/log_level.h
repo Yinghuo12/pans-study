@@ -1,16 +1,16 @@
 #ifndef PANS_INCLUDE_PANS_LOGGER_LOG_LEVEL_H
 #define PANS_INCLUDE_PANS_LOGGER_LOG_LEVEL_H
 
-#include <cstdint>
 #include <string_view>
 
 #include <pans/export.h>
+#include <pans/macros.h>
 
 namespace pans {
 
 class PANS_API LogLevel final {
 public:
-    enum class Level : std::uint8_t {
+    enum class Level : u8 {
         LOG_LV_DEBUG = 1,    // 记录调试细节，如变量值，程序执行流程
         LOG_LV_INFO  = 2,    // 记录正常运行信息，比如服务启动，数据库连接成功，玩家连接成功
         LOG_LV_WARN  = 3,    // 可能存在问题，但是程序还能继续执行

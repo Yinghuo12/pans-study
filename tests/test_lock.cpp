@@ -2,7 +2,6 @@
 #include <charconv>
 #include <chrono>
 #include <cstddef>
-#include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <latch>
@@ -14,17 +13,19 @@
 #include <thread>
 #include <vector>
 
+#include <pans/macros.h>
+
 constexpr int RUNS = 7;
 
-uint64_t g_target = 0;
-uint64_t g_Counter = 0;
-std::atomic<uint64_t> g_atomicCounter{0};
+u64 g_target = 0;
+u64 g_Counter = 0;
+std::atomic<u64> g_atomicCounter{0};
 std::mutex g_mutex;
 std::shared_mutex g_sharedMutex;
 
-uint64_t OperationsForThread(std::size_t thread_index, std::size_t thread_count) {
-    const uint64_t base = g_target / thread_count;
-    const uint64_t remainder = g_target % thread_count;
+u64 OperationsForThread(std::size_t thread_index, std::size_t thread_count) {
+    const u64 base = g_target / thread_count;
+    const u64 remainder = g_target % thread_count;
     return base + (thread_index < remainder ? 1 : 0);
 }
 
@@ -59,8 +60,8 @@ std::chrono::nanoseconds BenchmarkThreads(std::size_t thread_count, Operation&& 
 
 std::chrono::nanoseconds BenchmarkMutex(std::size_t thread_count) {
     g_Counter = 0;
-    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, uint64_t operations) {
-        for(uint64_t index = 0; index < operations; ++index) {
+    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, u64 operations) {
+        for(u64 index = 0; index < operations; ++index) {
             std::lock_guard<std::mutex> lock(g_mutex);
             ++g_Counter;
         }
@@ -70,8 +71,8 @@ std::chrono::nanoseconds BenchmarkMutex(std::size_t thread_count) {
 
 std::chrono::nanoseconds BenchmarkSharedMutex(std::size_t thread_count) {
     g_Counter = 0;
-    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, uint64_t operations) {
-        for(uint64_t index = 0; index < operations; ++index) {
+    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, u64 operations) {
+        for(u64 index = 0; index < operations; ++index) {
             std::unique_lock<std::shared_mutex> lock(g_sharedMutex);
             ++g_Counter;
         }
@@ -81,8 +82,8 @@ std::chrono::nanoseconds BenchmarkSharedMutex(std::size_t thread_count) {
 
 std::chrono::nanoseconds BenchmarkAtomic(std::size_t thread_count) {
     g_atomicCounter.store(0, std::memory_order_relaxed);
-    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, uint64_t operations) {
-        for(uint64_t index = 0; index < operations; ++index) {
+    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, u64 operations) {
+        for(u64 index = 0; index < operations; ++index) {
             g_atomicCounter.fetch_add(1, std::memory_order_relaxed);
         }
     });
@@ -91,9 +92,9 @@ std::chrono::nanoseconds BenchmarkAtomic(std::size_t thread_count) {
 
 std::chrono::nanoseconds BenchmarkAtomicCas(std::size_t thread_count) {
     g_atomicCounter.store(0, std::memory_order_relaxed);
-    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, uint64_t operations) {
-        for(uint64_t index = 0; index < operations; ++index) {
-            uint64_t expected = g_atomicCounter.load(std::memory_order_relaxed);
+    const auto elapsed = BenchmarkThreads(thread_count, [](std::size_t, u64 operations) {
+        for(u64 index = 0; index < operations; ++index) {
+            u64 expected = g_atomicCounter.load(std::memory_order_relaxed);
             while(!g_atomicCounter.compare_exchange_weak(expected, expected + 1, std::memory_order_relaxed, std::memory_order_relaxed)) { }
         }
     });

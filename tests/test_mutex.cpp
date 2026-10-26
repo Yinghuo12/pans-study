@@ -2,7 +2,6 @@
 #include <atomic>
 #include <chrono>
 #include <cstddef>
-#include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -14,9 +13,11 @@
 #include <thread>
 #include <vector>
 
+#include <pans/macros.h>
+
 constexpr int RUNS = 7;
-uint64_t g_Counter = 0;
-std::uint64_t g_target = 0;
+u64 g_Counter = 0;
+u64 g_target = 0;
 
 class Spinlock {
 public:
@@ -80,9 +81,9 @@ private:
 };
 
 
-std::uint64_t OperationsForThread(std::size_t thread_index, std::size_t thread_count) {
-    const std::uint64_t base = g_target / thread_count;
-    const std::uint64_t remainder = g_target % thread_count;
+u64 OperationsForThread(std::size_t thread_index, std::size_t thread_count) {
+    const u64 base = g_target / thread_count;
+    const u64 remainder = g_target % thread_count;
     return base + (thread_index < remainder ? 1 : 0);
 }
 
@@ -120,8 +121,8 @@ template <typename Mutex>
 std::chrono::nanoseconds BenchmarkMutex(std::size_t thread_count) {
     Mutex mutex;
     g_Counter = 0;
-    const auto elapsed = BenchmarkThreads(thread_count, [&mutex](std::size_t, uint64_t operations) {
-            for(uint64_t index = 0; index < operations; ++index) {
+    const auto elapsed = BenchmarkThreads(thread_count, [&mutex](std::size_t, u64 operations) {
+            for(u64 index = 0; index < operations; ++index) {
                 std::lock_guard<Mutex> lock(mutex);
                 ++g_Counter;
             }

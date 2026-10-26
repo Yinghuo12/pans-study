@@ -2,7 +2,6 @@
 #include <atomic>
 #include <chrono>
 #include <cstddef>
-#include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -12,18 +11,20 @@
 #include "logger/buffer.h"
 #include "logger/buffer_config.h"
 
+#include <pans/macros.h>
+
 constexpr int RUNS = 7;
-std::uint64_t g_target = 0;
+u64 g_target = 0;
 // 定义一个BENCHMARK_SINK变量，收集测量数据，让它产生一个编译器不可忽略的外部副作用，避免编译器把我们的逻辑优化掉
-std::atomic<std::uint64_t> BENCHMARK_SINK{0};
-std::uint64_t Observe(std::string_view value) noexcept {
-    return static_cast<std::uint64_t>(value.size()) +
+std::atomic<u64> BENCHMARK_SINK{0};
+u64 Observe(std::string_view value) noexcept {
+    return static_cast<u64>(value.size()) +
            static_cast<unsigned char>(value.front()) +
            static_cast<unsigned char>(value[value.size() / 2]) +
            static_cast<unsigned char>(value.back());
 }
 
-std::uint64_t WriteWithSmallStreamBuffer(std::string_view message) {
+u64 WriteWithSmallStreamBuffer(std::string_view message) {
     pans::detail::InlineBuffer<pans::detail::LOG_MESSAGE_INLINE_CAPACITY> buffer;
     pans::detail::SmallStreamBuffer<pans::detail::LOG_MESSAGE_INLINE_CAPACITY> stream_buffer(buffer);
     std::ostream stream(&stream_buffer);
@@ -31,7 +32,7 @@ std::uint64_t WriteWithSmallStreamBuffer(std::string_view message) {
     return Observe(buffer.view());
 }
 
-std::uint64_t WriteWithStringStream(std::string_view message) {
+u64 WriteWithStringStream(std::string_view message) {
     std::stringstream stream;
     stream << message;
     return Observe(stream.view());
@@ -39,9 +40,9 @@ std::uint64_t WriteWithStringStream(std::string_view message) {
 
 template <typename Operation>
 std::chrono::nanoseconds BenchmarkWrites(Operation&& operation) {
-    std::uint64_t checksum = 0;
+    u64 checksum = 0;
     const auto begin = std::chrono::steady_clock::now();
-    for(std::uint64_t iteration = 0; iteration < g_target; ++iteration) {
+    for(u64 iteration = 0; iteration < g_target; ++iteration) {
         checksum += operation();
     }
     const auto end = std::chrono::steady_clock::now();
